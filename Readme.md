@@ -1,7 +1,7 @@
 # Личный проект «Кексобукинг» [![Build status][travis-image]][travis-url]
 
 * Студент: [Gulmira Berdalieva](https://up.htmlacademy.ru/javascript/9/user/372521).
-* Наставник: `Неизвестно`.
+* Наставник: `Константин Тютюнников`.
 
 ---
 
