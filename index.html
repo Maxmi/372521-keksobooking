@@ -66,7 +66,7 @@
       </form>
     </div>
     <div class="tokyo__pin-map">
-      <div class="pin  pin__main"><img src="img/main-pin-image.png" alt="Main Pin" class="rounded" width="40" height="44"></div>
+      <!-- <div class="pin  pin__main"><img src="img/main-pin-image.png" alt="Main Pin" class="rounded" width="40" height="44"></div> -->
     </div>
     <div id="offer-dialog" class="dialog">
       <div class="dialog__title"><img src="img/avatars/user01.png" alt="Avatar" width="70" height="70">
@@ -255,7 +255,9 @@
 
 <template id="lodge-template">
   <div class="dialog__panel">
-    <h3 class="lodge__title"></h3>
+    <h3 class="lodge__title" >
+      <a href="#" class="dialog__close"><img src="img/close.svg" alt="close" width="22" height="22"></a>
+    </h3>
     <p class="lodge__address"></p>
     <h3 class="lodge__price"></h3>
     <h4 class="lodge__type"></h4>
@@ -268,6 +270,14 @@
     </div>
   </div>
 </template>
+
+<template id="pin-template" style="display: none">
+  <div class="pin">
+  <img src="" class="rounded" width="40" height="40">
+  </div>
+</template>
+
+<script src="js/map.js"></script>
 
 </body>
 </html>
