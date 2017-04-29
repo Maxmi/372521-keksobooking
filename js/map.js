@@ -1,36 +1,54 @@
 'use strict';
 
-var tokyoMap = document.querySelector('.tokyo__pin-map');
+// При нажатии на любой из элементов .pin ему должен добавляться класс pin--active
+// и должен показываться элемент .dialog
 
 var offerDialog = document.querySelector('#offer-dialog');
 
-var title = [
-  'Большая уютная квартира',
-  'Маленькая неуютная квартира',
-  'Огромный прекрасный дворец',
-  'Маленький ужасный дворец',
-  'Красивый гостевой домик',
-  'Некрасивый негостеприимный домик',
-  'Уютное бунгало далеко от моря',
-  'Неуютное бунгало по колено в воде'
-];
+var openDialog = function (data) {
+  addLodgeDetails(data);
+};
 
-var types = ['flat', 'house', 'bungalo'];
 
-var checkinTimes = ['12:00', '13:00', '14:00'];
+// При нажатии на элемент .dialog__close карточка объявления
+// должна скрываться. При этом должен деактивироваться элемент .pin, который был помечен как активный
+var closeDialog = function () {
+  var pinElements = document.querySelectorAll('.pin');
+  offerDialog.classList.add('hidden');
+  clearActivePins(pinElements);
+};
 
-var checkoutTimes = ['12:00', '13:00', '14:00'];
 
-var features = [
-  'wifi',
-  'dishwasher',
-  'parking',
-  'washer',
-  'elevator',
-  'conditioner'];
+var ENTER_KEY_CODE = 13;
+
+var ESC_KEY_CODE = 27;
+
+// При нажатии на элемент .dialog__close карточка объявления должна скрываться.
+// При этом должен деактивироваться элемент .pin, который был помечен как активный
+var closeElement = offerDialog.querySelector('.dialog__close');
+
+closeElement.addEventListener('click', function (evt) {
+  evt.preventDefault();
+  closeDialog();
+});
+
+closeElement.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ENTER_KEY_CODE) {
+    closeDialog();
+  }
+});
+
+document.addEventListener('keydown', function (evt) {
+  if (evt.keyCode === ESC_KEY_CODE && !offerDialog.classList.contains('hidden')) {
+    closeDialog();
+  }
+});
+
+
+var tokyoMap = document.querySelector('.tokyo__pin-map');
+
 
 // создаeм данные для lodge
-
 
 function getRandomNum(min, max) {
   min = Math.ceil(min);
@@ -41,7 +59,7 @@ function getRandomNum(min, max) {
 // Создайте массив, состоящий из 8 сгенерированных JS объектов,
 // которые будут описывать похожие объявления неподалеку
 
-var mapData = function setupMapData() {
+function setupMapData() {
   var data = [];
   for (var i = 0; i < 8; i++) {
     var x = getRandomNum(300, 900);
@@ -51,15 +69,15 @@ var mapData = function setupMapData() {
         avatar: `img/avatars/user0${i + 1}.png`
       },
       offer: {
-        title: title[i],
+        title: window.consts.title[i],
         address: x + ',' + y,
         price: getRandomNum(1000, 1000000),
-        type: types[getRandomNum(0, 2)],
+        type: window.consts.types[getRandomNum(0, 2)],
         rooms: getRandomNum(1, 5),
         guests: getRandomNum(1, 3),
-        checkin: checkinTimes[getRandomNum(0, 2)],
-        checkout: checkoutTimes[getRandomNum(0, 2)],
-        features: features.splice(0, getRandomNum(1, 5)),
+        checkin: window.consts.checkinTimes[getRandomNum(0, 2)],
+        checkout: window.consts.checkoutTimes[getRandomNum(0, 2)],
+        features: window.consts.features.splice(0, getRandomNum(1, 5)),
         description: '',
         photos: []
       },
@@ -67,19 +85,23 @@ var mapData = function setupMapData() {
     });
   }
   return data;
-};
+}
 
-
+var mapData = setupMapData();
 // На основе данных, созданных в предыдущем пункте создайте DOM-элементы,
 // соответствующие меткам на карте случайно сгенерированных объявлений
 // и заполните их данными из массива.
 
 
-var renderPin = function (pin) {
+var renderPin = function (pin, index) {
   var pinTemplate = document.querySelector('#pin-template').content;
   var pinElement = pinTemplate.cloneNode(true);
-  var pinStyle = pinElement.querySelector('.pin').style;
+  var pinDomEl = pinElement.querySelector('.pin');
+
+  var pinStyle = pinDomEl.style;
   var image = pinElement.querySelector('.rounded');
+  pinDomEl.setAttribute('tabindex', 0);
+  pinDomEl.setAttribute('data-index', index);
 
   pinStyle.left = (pin.location.x - (image.width / 2)) + 'px';
   pinStyle.bottom = pin.location.y + 'px';
@@ -95,9 +117,50 @@ function addPins() {
   var fragment = document.createDocumentFragment();
 
   for (var i = 0; i < mapData.length; i++) {
-    fragment.appendChild(renderPin(mapData[i]));
+    var pinElement = renderPin(mapData[i], i);
+    fragment.appendChild(pinElement);
   }
   tokyoMap.appendChild(fragment);
+}
+
+
+function clearActivePins(pinElements) {
+  pinElements.forEach(function (pinElement) {
+    if (pinElement.classList.contains('pin--active')) {
+      pinElement.classList.remove('pin--active');
+      offerDialog.classList.add('hidden');
+    }
+
+  });
+}
+
+function setupPinsHandler() {
+  var pinElements = document.querySelectorAll('.pin');
+  // Если до этого у другого элемента существовал класс pin--active,
+  // то у этого элемента класс нужно убрать
+  pinElements.forEach(function (pinElement) {
+    pinElement.addEventListener('click', activatePinHandler); // this is called reference
+    pinElement.addEventListener('keydown', function (evt) {
+      if (evt.keyCode === ENTER_KEY_CODE) {
+        activatePinHandler(evt);
+      }
+    });
+  });
+}
+
+function activatePinHandler(evt) {
+  var target = evt.target;
+  var pinElements = document.querySelectorAll('.pin');
+  var pinDomEl;
+  if (target.classList.contains('pin')) {
+    pinDomEl = target;
+  } else if (target.parentElement.classList.contains('pin')) {
+    pinDomEl = target.parentElement;
+  }
+  clearActivePins(pinElements);
+  pinDomEl.classList.add('pin--active');
+  var pinIndex = pinDomEl.getAttribute('data-index');
+  openDialog(mapData[pinIndex]);
 }
 
 // На основе первого по порядку элемента из сгенерированного массива
@@ -108,13 +171,13 @@ function addPins() {
 function setLodgeType(dialogPanelElement, lodgeType) {
   var lodgeTypeElement = dialogPanelElement.querySelector('.lodge__type');
   switch (lodgeType) {
-    case types[0]:
+    case window.consts.types[0]:
       lodgeTypeElement.textContent = 'Квартира';
       break;
-    case types[1]:
+    case window.consts.types[1]:
       lodgeTypeElement.textContent = 'Дом';
       break;
-    case types[2]:
+    case window.consts.types[2]:
       lodgeTypeElement.textContent = 'Бунгало';
       break;
   }
@@ -154,14 +217,14 @@ function addAvatar(lodgeInfo) {
   image.src = lodgeInfo.author.avatar;
 }
 
-function addLodgeDetails() {
-  var data = mapData[0];
+function addLodgeDetails(data) {
   var fragment = document.createDocumentFragment();
-
   addAvatar(data);
   fragment.appendChild(renderLodge(data));
   offerDialog.replaceChild(fragment, offerDialog.querySelector('.dialog__panel'));
+  offerDialog.classList.remove('hidden');
 }
 
+
 addPins();
-addLodgeDetails();
+setupPinsHandler();
