@@ -5,10 +5,9 @@
 
 var offerDialog = document.querySelector('#offer-dialog');
 
-var openDialog = function (data) {
-  addLodgeDetails(data);
-};
+var tokyoMap = document.querySelector('.tokyo__pin-map');
 
+var closeElement = offerDialog.querySelector('.dialog__close');
 
 // При нажатии на элемент .dialog__close карточка объявления
 // должна скрываться. При этом должен деактивироваться элемент .pin, который был помечен как активный
@@ -18,6 +17,7 @@ var closeDialog = function () {
   clearActivePins(pinElements);
 };
 
+var mapData = setupMapData();
 
 var ENTER_KEY_CODE = 13;
 
@@ -25,7 +25,6 @@ var ESC_KEY_CODE = 27;
 
 // При нажатии на элемент .dialog__close карточка объявления должна скрываться.
 // При этом должен деактивироваться элемент .pin, который был помечен как активный
-var closeElement = offerDialog.querySelector('.dialog__close');
 
 closeElement.addEventListener('click', function (evt) {
   evt.preventDefault();
@@ -43,10 +42,6 @@ document.addEventListener('keydown', function (evt) {
     closeDialog();
   }
 });
-
-
-var tokyoMap = document.querySelector('.tokyo__pin-map');
-
 
 // создаeм данные для lodge
 
@@ -87,13 +82,13 @@ function setupMapData() {
   return data;
 }
 
-var mapData = setupMapData();
+
 // На основе данных, созданных в предыдущем пункте создайте DOM-элементы,
 // соответствующие меткам на карте случайно сгенерированных объявлений
 // и заполните их данными из массива.
 
 
-var renderPin = function (pin, index) {
+function renderPin(pin, index) {
   var pinTemplate = document.querySelector('#pin-template').content;
   var pinElement = pinTemplate.cloneNode(true);
   var pinDomEl = pinElement.querySelector('.pin');
@@ -108,7 +103,7 @@ var renderPin = function (pin, index) {
   image.src = pin.author.avatar;
 
   return pinElement;
-};
+}
 
 // Отрисуйте сгенерированные DOM-элементы в блок .tokyo__pin-map.
 // Для вставки элементов используйте DocumentFragment.
@@ -160,7 +155,7 @@ function activatePinHandler(evt) {
   clearActivePins(pinElements);
   pinDomEl.classList.add('pin--active');
   var pinIndex = pinDomEl.getAttribute('data-index');
-  openDialog(mapData[pinIndex]);
+  addLodgeDetails(mapData[pinIndex]);
 }
 
 // На основе первого по порядку элемента из сгенерированного массива
@@ -183,7 +178,7 @@ function setLodgeType(dialogPanelElement, lodgeType) {
   }
 }
 
-var renderLodge = function (lodgeInfo) {
+function renderLodge(lodgeInfo) {
   var dialogPanelTemplate = document.querySelector('#lodge-template').content;
   var dialogPanelElement = dialogPanelTemplate.cloneNode(true);
   var lodgeTitle = dialogPanelElement.querySelector('.lodge__title');
@@ -210,7 +205,7 @@ var renderLodge = function (lodgeInfo) {
   dialogPanelElement.querySelector('.lodge__description').textContent = lodgeInfo.offer.description;
 
   return dialogPanelElement;
-};
+}
 
 function addAvatar(lodgeInfo) {
   var image = offerDialog.querySelector('.dialog__title').querySelector('img');
